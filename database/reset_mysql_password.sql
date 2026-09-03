@@ -1,0 +1,3 @@
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root123';
+FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS placement_db;

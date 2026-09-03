@@ -1,0 +1,313 @@
+{
+  "info": {
+    "_postman_id": "8fa19e34-5829-4b67-8db1-c5db611598aa",
+    "name": "Smart Job & Placement Management System API",
+    "description": "Comprehensive REST API collection for campus placements, student profiles, eligibility evaluation, skill gap recommendations, interview scheduling, bulk student onboarding, and analytics.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Student Registration",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karan.verma@college.edu\",\n  \"password\": \"Password@123\",\n  \"fullName\": \"Karan Verma\",\n  \"phone\": \"+91 9876543299\",\n  \"dateOfBirth\": \"2003-08-15\",\n  \"department\": \"CSE\",\n  \"degree\": \"B.Tech\",\n  \"graduationYear\": 2025,\n  \"cgpa\": 8.65,\n  \"skills\": [\"Java\", \"Spring Boot\", \"SQL\", \"Docker\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Student / Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@placement.edu\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Student Module",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/students/profile", "host": ["{{baseUrl}}"], "path": ["students", "profile"] }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Rahul Sharma\",\n  \"phone\": \"+91 9876543210\",\n  \"dateOfBirth\": \"2003-05-14\",\n  \"department\": \"CSE\",\n  \"degree\": \"B.Tech\",\n  \"graduationYear\": 2025,\n  \"cgpa\": 8.90,\n  \"skills\": [\"Java\", \"Spring Boot\", \"SQL\", \"React\", \"AWS\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/students/profile", "host": ["{{baseUrl}}"], "path": ["students", "profile"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password@123\",\n  \"newPassword\": \"NewPassword@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/students/change-password", "host": ["{{baseUrl}}"], "path": ["students", "change-password"] }
+          }
+        },
+        {
+          "name": "Get All Skills Master",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/students/skills", "host": ["{{baseUrl}}"], "path": ["students", "skills"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Companies",
+      "item": [
+        {
+          "name": "List All Companies",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/companies", "host": ["{{baseUrl}}"], "path": ["companies"] }
+          }
+        },
+        {
+          "name": "Create Company (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cognitive AI Labs\",\n  \"description\": \"Autonomous AI agents & scalable cloud infrastructure solutions.\",\n  \"industry\": \"Artificial Intelligence\",\n  \"location\": \"Bangalore, India\",\n  \"website\": \"https://cognitiveailabs.com\",\n  \"contactEmail\": \"careers@cognitiveailabs.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/companies", "host": ["{{baseUrl}}"], "path": ["companies"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Jobs & Eligibility",
+      "item": [
+        {
+          "name": "Filter & Search Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/jobs?query=&department=CSE&employmentType=Full-time&status=OPEN&page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "query", "value": "" },
+                { "key": "department", "value": "CSE" },
+                { "key": "employmentType", "value": "Full-time" },
+                { "key": "status", "value": "OPEN" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Eligibility & Skill Gap",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/jobs/1/eligibility", "host": ["{{baseUrl}}"], "path": ["jobs", "1", "eligibility"] }
+          }
+        },
+        {
+          "name": "Create Job Opening (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": 1,\n  \"title\": \"Cloud Native SDE\",\n  \"description\": \"Develop resilient microservices and cloud infrastructure.\",\n  \"minCgpa\": 7.50,\n  \"eligibleDepartment\": \"CSE\",\n  \"graduationYear\": 2025,\n  \"location\": \"Hyderabad, India\",\n  \"employmentType\": \"Full-time\",\n  \"salaryPackage\": \"16.0 LPA\",\n  \"deadline\": \"2026-12-31\",\n  \"status\": \"OPEN\",\n  \"requiredSkills\": [\"Java\", \"Spring Boot\", \"Docker\", \"AWS\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/jobs", "host": ["{{baseUrl}}"], "path": ["jobs"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Applications",
+      "item": [
+        {
+          "name": "Apply for Job (Student)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/applications", "host": ["{{baseUrl}}"], "path": ["applications"] }
+          }
+        },
+        {
+          "name": "Get My Applications (Student)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/applications/my", "host": ["{{baseUrl}}"], "path": ["applications", "my"] }
+          }
+        },
+        {
+          "name": "Update Application Status (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHORTLISTED\",\n  \"remarks\": \"Resume matches all core backend and distributed system criteria.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/applications/1/status", "host": ["{{baseUrl}}"], "path": ["applications", "1", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Interview Scheduling",
+      "item": [
+        {
+          "name": "Schedule Interview (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": 1,\n  \"interviewDate\": \"2026-09-15\",\n  \"interviewTime\": \"10:30\",\n  \"mode\": \"ONLINE\",\n  \"locationOrLink\": \"https://meet.google.com/placement-tech-round-1\",\n  \"roundName\": \"Technical Assessment Round 1\",\n  \"remarks\": \"Focus on Data Structures, Algorithms, and System Design concepts.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/interviews", "host": ["{{baseUrl}}"], "path": ["interviews"] }
+          }
+        },
+        {
+          "name": "Get My Scheduled Interviews (Student)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/interviews/my", "host": ["{{baseUrl}}"], "path": ["interviews", "my"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/my", "host": ["{{baseUrl}}"], "path": ["notifications", "my"] }
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["notifications", "read-all"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Admin Analytics & Reporting",
+      "item": [
+        {
+          "name": "Get Dashboard Summary KPIs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/analytics/summary", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "summary"] }
+          }
+        },
+        {
+          "name": "Get Department Placement Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/analytics/department-stats", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "department-stats"] }
+          }
+        },
+        {
+          "name": "Get Company Average Packages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/analytics/company-packages", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "company-packages"] }
+          }
+        },
+        {
+          "name": "Export Placement Report (CSV)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/analytics/export-csv", "host": ["{{baseUrl}}"], "path": ["admin", "analytics", "export-csv"] }
+          }
+        }
+      ]
+    }
+  ]
+}
