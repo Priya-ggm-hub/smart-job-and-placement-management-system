@@ -47,20 +47,20 @@ ON DUPLICATE KEY UPDATE resource_title=VALUES(resource_title), resource_url=VALU
 
 -- ----------------------------------------------------------
 -- 3. Insert Users (Admin & Students)
--- Password for all seed accounts: "Password@123" (BCrypt hash below)
--- Admin: admin@placement.edu / Password@123
+-- Admin: admin@placement.edu / Admin@123 (BCrypt hash below)
+-- Students: Password@123 (BCrypt hash below)
 -- Student 1: rahul.sharma@college.edu / Password@123
 -- Student 2: ananya.patel@college.edu / Password@123
 -- Student 3: vikram.singh@college.edu / Password@123
 -- Student 4: priya.nair@college.edu / Password@123
 -- ----------------------------------------------------------
 INSERT INTO users (id, email, password, role, is_active) VALUES
-(1, 'admin@placement.edu', '$2a$10$O0rE2B5cRjJq6eXjM7jW4.FkXQZqPZzJ1eU5iHqQ8xY2k0N9e7O6S', 'ROLE_ADMIN', TRUE),
-(2, 'rahul.sharma@college.edu', '$2a$10$O0rE2B5cRjJq6eXjM7jW4.FkXQZqPZzJ1eU5iHqQ8xY2k0N9e7O6S', 'ROLE_STUDENT', TRUE),
-(3, 'ananya.patel@college.edu', '$2a$10$O0rE2B5cRjJq6eXjM7jW4.FkXQZqPZzJ1eU5iHqQ8xY2k0N9e7O6S', 'ROLE_STUDENT', TRUE),
-(4, 'vikram.singh@college.edu', '$2a$10$O0rE2B5cRjJq6eXjM7jW4.FkXQZqPZzJ1eU5iHqQ8xY2k0N9e7O6S', 'ROLE_STUDENT', TRUE),
-(5, 'priya.nair@college.edu', '$2a$10$O0rE2B5cRjJq6eXjM7jW4.FkXQZqPZzJ1eU5iHqQ8xY2k0N9e7O6S', 'ROLE_STUDENT', TRUE)
-ON DUPLICATE KEY UPDATE email=VALUES(email);
+(1, 'admin@placement.edu', '$2a$10$6bFOhzG31.OlaXc3ses/muUfIZrENSuAuulkMwwj43/jzgu5PHnmG', 'ROLE_ADMIN', TRUE),
+(2, 'rahul.sharma@college.edu', '$2a$10$24hx5FgZO6MUHJ1yfPxPZ.N0lPFWH1PABofHpVTh2msqAQBmcL6JK', 'ROLE_STUDENT', TRUE),
+(3, 'ananya.patel@college.edu', '$2a$10$24hx5FgZO6MUHJ1yfPxPZ.N0lPFWH1PABofHpVTh2msqAQBmcL6JK', 'ROLE_STUDENT', TRUE),
+(4, 'vikram.singh@college.edu', '$2a$10$24hx5FgZO6MUHJ1yfPxPZ.N0lPFWH1PABofHpVTh2msqAQBmcL6JK', 'ROLE_STUDENT', TRUE),
+(5, 'priya.nair@college.edu', '$2a$10$24hx5FgZO6MUHJ1yfPxPZ.N0lPFWH1PABofHpVTh2msqAQBmcL6JK', 'ROLE_STUDENT', TRUE)
+ON DUPLICATE KEY UPDATE email=VALUES(email), password=VALUES(password), role=VALUES(role), is_active=VALUES(is_active);
 
 -- ----------------------------------------------------------
 -- 4. Insert Student Profiles
