@@ -10,12 +10,30 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
-import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Configuration
 public class DataSourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
+
+    private static final Pattern MYSQL_URI_PATTERN = Pattern.compile(
+            "^(?:jdbc:)?(?:mysql|mariadb)://(?:([^:@]+)(?::([^@]*))?@)?([^:/]+)(?::(\\d+))?(?:/([^?#]*))?(?:\\?(.*))?$",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    public static class ResolvedDbConfig {
+        public String jdbcUrl;
+        public String username;
+        public String password;
+
+        public ResolvedDbConfig(String jdbcUrl, String username, String password) {
+            this.jdbcUrl = jdbcUrl;
+            this.username = username;
+            this.password = password;
+        }
+    }
 
     @Bean
     @Primary
@@ -25,14 +43,36 @@ public class DataSourceConfig {
             @Value("${spring.datasource.password:}") String configPassword,
             @Value("${spring.datasource.driver-class-name:com.mysql.cj.jdbc.Driver}") String driverClassName) {
 
+        ResolvedDbConfig resolved = resolveConfig(configUrl, configUsername, configPassword);
+
+        logger.info("Initializing HikariDataSource with JDBC URL: {} and Username: {}", maskUrl(resolved.jdbcUrl), resolved.username);
+
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(resolved.jdbcUrl);
+        hikariConfig.setUsername(resolved.username);
+        hikariConfig.setPassword(resolved.password);
+        hikariConfig.setDriverClassName(driverClassName);
+        hikariConfig.setMaximumPoolSize(10);
+        hikariConfig.setMinimumIdle(2);
+        hikariConfig.setConnectionTimeout(20000);
+        hikariConfig.setValidationTimeout(5000);
+        hikariConfig.setIdleTimeout(600000);
+        hikariConfig.setMaxLifetime(1800000);
+        hikariConfig.setInitializationFailTimeout(30000);
+
+        return new HikariDataSource(hikariConfig);
+    }
+
+    public static ResolvedDbConfig resolveConfig(String configUrl, String configUsername, String configPassword) {
+        // Priority 1: Railway MySQL URLs (prioritized over legacy DB_* vars)
         String rawUrl = getFirstNonEmpty(
-                System.getenv("DB_URL"),
-                System.getenv("SPRING_DATASOURCE_URL"),
                 System.getenv("MYSQL_URL"),
                 System.getenv("MYSQL_PRIVATE_URL"),
                 System.getenv("MYSQL_PUBLIC_URL"),
                 System.getenv("DATABASE_URL"),
                 System.getenv("MYSQLURL"),
+                System.getenv("SPRING_DATASOURCE_URL"),
+                System.getenv("DB_URL"),
                 configUrl
         );
 
@@ -52,18 +92,18 @@ public class DataSourceConfig {
                 System.getenv("DB_NAME")
         );
         String username = getFirstNonEmpty(
-                System.getenv("DB_USERNAME"),
-                System.getenv("DB_USER"),
                 System.getenv("MYSQLUSER"),
                 System.getenv("MYSQL_USER"),
                 System.getenv("SPRING_DATASOURCE_USERNAME"),
+                System.getenv("DB_USERNAME"),
+                System.getenv("DB_USER"),
                 configUsername
         );
         String password = getFirstNonEmpty(
-                System.getenv("DB_PASSWORD"),
                 System.getenv("MYSQLPASSWORD"),
                 System.getenv("MYSQL_PASSWORD"),
                 System.getenv("SPRING_DATASOURCE_PASSWORD"),
+                System.getenv("DB_PASSWORD"),
                 configPassword
         );
 
@@ -72,36 +112,31 @@ public class DataSourceConfig {
         String finalPassword = password;
 
         if (rawUrl != null && !rawUrl.isBlank()) {
-            if (rawUrl.startsWith("mysql://") || rawUrl.startsWith("mariadb://")) {
-                try {
-                    URI uri = new URI(rawUrl);
-                    String userInfo = uri.getUserInfo();
-                    if (userInfo != null && userInfo.contains(":")) {
-                        String[] parts = userInfo.split(":", 2);
-                        if (finalUsername == null || finalUsername.isBlank()) {
-                            finalUsername = parts[0];
-                        }
-                        if (finalPassword == null || finalPassword.isBlank()) {
-                            finalPassword = parts[1];
-                        }
-                    }
-                    String path = uri.getPath();
-                    if (path != null && path.startsWith("/")) {
-                        path = path.substring(1);
-                    }
-                    if (path == null || path.isBlank()) {
-                        path = (database != null && !database.isBlank()) ? database : "railway";
-                    }
-                    int uriPort = uri.getPort() > 0 ? uri.getPort() : 3306;
-                    String baseUrl = "jdbc:mysql://" + uri.getHost() + ":" + uriPort + "/" + path;
-                    if (uri.getQuery() != null && !uri.getQuery().isBlank()) {
-                        baseUrl += "?" + uri.getQuery();
-                    }
-                    finalJdbcUrl = appendJdbcParams(baseUrl);
-                } catch (Exception e) {
-                    logger.warn("Could not parse URI {}, using jdbc:mysql fallback.", rawUrl);
-                    finalJdbcUrl = appendJdbcParams("jdbc:" + rawUrl);
+            Matcher matcher = MYSQL_URI_PATTERN.matcher(rawUrl.trim());
+            if (matcher.matches()) {
+                String uriUser = matcher.group(1);
+                String uriPass = matcher.group(2);
+                String uriHost = matcher.group(3);
+                String uriPort = matcher.group(4);
+                String uriDb = matcher.group(5);
+                String uriQuery = matcher.group(6);
+
+                // When credentials are embedded in MYSQL_URL, they take precedence
+                if (uriUser != null && !uriUser.isBlank()) {
+                    finalUsername = uriUser;
                 }
+                if (uriPass != null) {
+                    finalPassword = uriPass;
+                }
+
+                String effectivePort = (uriPort != null && !uriPort.isBlank()) ? uriPort : ((port != null && !port.isBlank()) ? port : "3306");
+                String effectiveDb = (uriDb != null && !uriDb.isBlank()) ? uriDb : ((database != null && !database.isBlank()) ? database : "railway");
+
+                String base = "jdbc:mysql://" + uriHost + ":" + effectivePort + "/" + effectiveDb;
+                if (uriQuery != null && !uriQuery.isBlank()) {
+                    base += "?" + uriQuery;
+                }
+                finalJdbcUrl = appendJdbcParams(base);
             } else if (rawUrl.startsWith("jdbc:")) {
                 finalJdbcUrl = appendJdbcParams(rawUrl);
             } else {
@@ -109,16 +144,9 @@ public class DataSourceConfig {
             }
         }
 
-        // If no raw URL, construct from host/port/database
+        // Fallback to host/port/database if no rawUrl was provided
         if (finalJdbcUrl == null || finalJdbcUrl.isBlank()) {
-            String dbHost = host;
-            if (dbHost == null || dbHost.isBlank()) {
-                if (System.getenv("RAILWAY_ENVIRONMENT") != null || System.getenv("RAILWAY_SERVICE_ID") != null) {
-                    dbHost = "mysql.railway.internal";
-                } else {
-                    dbHost = "localhost";
-                }
-            }
+            String dbHost = (host != null && !host.isBlank()) ? host : "mysql.railway.internal";
             String dbPort = (port != null && !port.isBlank()) ? port : "3306";
             String dbName = (database != null && !database.isBlank()) ? database : "railway";
             finalJdbcUrl = appendJdbcParams("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName);
@@ -131,24 +159,10 @@ public class DataSourceConfig {
             finalPassword = "";
         }
 
-        logger.info("Initializing DataSource with JDBC URL: {} and Username: {}", maskUrl(finalJdbcUrl), finalUsername);
-
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(finalJdbcUrl);
-        hikariConfig.setUsername(finalUsername);
-        hikariConfig.setPassword(finalPassword);
-        hikariConfig.setDriverClassName(driverClassName);
-        hikariConfig.setMaximumPoolSize(10);
-        hikariConfig.setMinimumIdle(2);
-        hikariConfig.setConnectionTimeout(30000);
-        hikariConfig.setIdleTimeout(600000);
-        hikariConfig.setMaxLifetime(1800000);
-        hikariConfig.setInitializationFailTimeout(60000);
-
-        return new HikariDataSource(hikariConfig);
+        return new ResolvedDbConfig(finalJdbcUrl, finalUsername, finalPassword);
     }
 
-    private String appendJdbcParams(String url) {
+    public static String appendJdbcParams(String url) {
         if (url == null) return url;
         String separator = url.contains("?") ? "&" : "?";
         StringBuilder sb = new StringBuilder(url);
@@ -170,7 +184,7 @@ public class DataSourceConfig {
         return sb.toString();
     }
 
-    private String getFirstNonEmpty(String... values) {
+    private static String getFirstNonEmpty(String... values) {
         if (values == null) return null;
         for (String v : values) {
             if (v != null && !v.trim().isEmpty()) {
@@ -180,7 +194,7 @@ public class DataSourceConfig {
         return null;
     }
 
-    private String maskUrl(String url) {
+    private static String maskUrl(String url) {
         if (url == null) return "null";
         return url.replaceAll("://([^:]+):([^@]+)@", "://$1:****@");
     }
