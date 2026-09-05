@@ -11,10 +11,12 @@ import {
   Users,
   UploadCloud,
   Layers,
-  ClipboardList
+  ClipboardList,
+  X,
+  Briefcase
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ mobileNavOpen, onCloseMobileNav }) => {
   const { isStudent, isAdmin } = useAuth();
 
   const studentNavItems = [
@@ -37,47 +39,83 @@ const Sidebar = () => {
 
   const navItems = isAdmin ? adminNavItems : studentNavItems;
 
-  return (
-    <aside
-      style={{
-        width: '260px',
-        backgroundColor: 'var(--bg-sidebar)',
-        color: '#94a3b8',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-        minHeight: 'calc(100vh - 64px)',
-      }}
-    >
-      <div style={{ padding: '1.5rem 1.25rem 0.5rem', fontSize: '0.725rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b' }}>
-        {isAdmin ? 'Administration Portal' : 'Student Portal'}
-      </div>
+  const handleNavClick = () => {
+    if (onCloseMobileNav) {
+      onCloseMobileNav();
+    }
+  };
 
-      <nav style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.875rem',
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '0.875rem',
-              fontWeight: isActive ? 600 : 500,
-              color: isActive ? '#ffffff' : '#94a3b8',
-              backgroundColor: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-              borderLeft: isActive ? '3px solid var(--primary-500)' : '3px solid transparent',
-              transition: 'var(--transition)',
-            })}
+  return (
+    <>
+      {/* Mobile Drawer Backdrop */}
+      {mobileNavOpen && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={onCloseMobileNav} 
+          aria-hidden="true" 
+        />
+      )}
+
+      <aside className={`app-sidebar ${mobileNavOpen ? 'open' : ''}`}>
+        {/* Mobile Header with close button */}
+        <div className="sidebar-mobile-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <div
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: 'var(--radius-md)',
+                background: 'linear-gradient(135deg, var(--primary-600), var(--accent-500))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+              }}
+            >
+              <Briefcase size={16} />
+            </div>
+            <span
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 700,
+                fontSize: '1rem',
+                color: '#ffffff',
+              }}
+            >
+              Placement<span style={{ color: 'var(--primary-500)' }}>Portal</span>
+            </span>
+          </div>
+
+          <button
+            onClick={onCloseMobileNav}
+            className="sidebar-close-btn"
+            aria-label="Close navigation menu"
           >
-            {item.icon}
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Section Label */}
+        <div className="sidebar-section-label">
+          {isAdmin ? 'Administration Portal' : 'Student Portal'}
+        </div>
+
+        {/* Nav Links */}
+        <nav style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={handleNavClick}
+              className={({ isActive }) => `sidebar-nav-link ${isActive ? 'active' : ''}`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 };
 

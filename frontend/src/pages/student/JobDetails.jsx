@@ -177,7 +177,7 @@ const JobDetails = () => {
 
           <div className="card">
             <h2 className="section-title">Eligibility Criteria Set by Company</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '1rem' }}>
               <div style={{ padding: '0.875rem', backgroundColor: 'var(--gray-50)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Minimum CGPA</div>
                 <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--gray-900)', marginTop: '0.2rem' }}>
@@ -206,7 +206,7 @@ const JobDetails = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Eligibility Breakdown Card */}
           <div className="card">
-            <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h2 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               {eligibility?.eligible ? (
                 <>
                   <CheckCircle size={20} color="var(--success-600)" />
@@ -221,7 +221,7 @@ const JobDetails = () => {
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--gray-100)', flexWrap: 'wrap', gap: '0.35rem' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--gray-700)' }}>CGPA Requirement ({job.minCgpa?.toFixed(2)})</span>
                 {eligibility?.cgpaSatisfied ? (
                   <span className="badge badge-selected"><CheckCircle size={12} /> Satisfied ({eligibility.studentCgpa?.toFixed(2)})</span>
@@ -230,7 +230,7 @@ const JobDetails = () => {
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--gray-100)', flexWrap: 'wrap', gap: '0.35rem' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--gray-700)' }}>Department ({job.eligibleDepartment})</span>
                 {eligibility?.departmentSatisfied ? (
                   <span className="badge badge-selected"><CheckCircle size={12} /> Eligible ({eligibility.studentDepartment})</span>
@@ -239,7 +239,7 @@ const JobDetails = () => {
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--gray-100)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--gray-100)', flexWrap: 'wrap', gap: '0.35rem' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--gray-700)' }}>Required Technical Skills</span>
                 {eligibility?.skillsSatisfied ? (
                   <span className="badge badge-selected"><CheckCircle size={12} /> All Matched</span>

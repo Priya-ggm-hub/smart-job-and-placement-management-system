@@ -69,11 +69,13 @@ const NotificationDropdown = () => {
 
       {isOpen && (
         <div
+          className="notification-dropdown-panel"
           style={{
             position: 'absolute',
             right: 0,
             top: '48px',
-            width: '360px',
+            width: 'min(360px, calc(100vw - 24px))',
+            maxWidth: 'calc(100vw - 24px)',
             maxHeight: '440px',
             backgroundColor: '#ffffff',
             borderRadius: 'var(--radius-lg)',

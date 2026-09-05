@@ -65,10 +65,11 @@ const StudentDashboard = () => {
     <div>
       {/* Header Banner */}
       <div
+        className="dashboard-hero-banner"
         style={{
           background: 'linear-gradient(135deg, #1e1b4b, #312e81)',
           borderRadius: 'var(--radius-lg)',
-          padding: '2rem',
+          padding: '1.75rem 1.5rem',
           color: '#ffffff',
           marginBottom: '1.75rem',
           boxShadow: 'var(--shadow-md)',
@@ -83,10 +84,10 @@ const StudentDashboard = () => {
           <div style={{ fontSize: '0.85rem', color: '#c7d2fe', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Academic Session 2025-2026
           </div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.25rem', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '1.65rem', fontWeight: 800, marginTop: '0.25rem', letterSpacing: '-0.02em' }}>
             Welcome back, {profile?.fullName || user?.fullName || 'Student'}! 👋
           </h1>
-          <p style={{ color: '#e0e7ff', fontSize: '0.925rem', marginTop: '0.35rem', maxWidth: '600px' }}>
+          <p style={{ color: '#e0e7ff', fontSize: '0.9rem', marginTop: '0.35rem', maxWidth: '600px' }}>
             {profile?.department} • {profile?.degree} • Class of {profile?.graduationYear} • CGPA: {profile?.cgpa?.toFixed(2)}
           </p>
         </div>
@@ -173,6 +174,8 @@ const StudentDashboard = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '0.75rem',
                   }}
                 >
                   <div>
@@ -226,10 +229,12 @@ const StudentDashboard = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.925rem', color: 'var(--gray-900)' }}>
                       {job.title}
                     </span>

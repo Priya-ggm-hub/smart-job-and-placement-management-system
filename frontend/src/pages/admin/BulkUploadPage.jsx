@@ -83,18 +83,21 @@ const BulkUploadPage = () => {
             style={{
               border: '2px dashed var(--gray-300)',
               borderRadius: 'var(--radius-lg)',
-              padding: '3rem 2rem',
+              padding: '2rem 1rem',
               textAlign: 'center',
               backgroundColor: 'var(--gray-50)',
               cursor: 'pointer',
               transition: 'var(--transition)',
+              maxWidth: '100%',
+              overflow: 'hidden',
+              boxSizing: 'border-box',
             }}
           >
-            <UploadCloud size={48} color="var(--primary-600)" style={{ margin: '0 auto 1rem' }} />
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--gray-900)' }}>
+            <UploadCloud size={44} color="var(--primary-600)" style={{ margin: '0 auto 0.75rem' }} />
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--gray-900)' }}>
               Choose Excel (.xlsx) or CSV (.csv) File
             </h3>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
               Columns required: Name, Email, Phone, Department, Degree, GraduationYear, CGPA, Skills
             </p>
 
@@ -102,12 +105,12 @@ const BulkUploadPage = () => {
               type="file"
               accept=".xlsx, .xls, .csv"
               onChange={handleFileChange}
-              style={{ marginTop: '1.25rem' }}
+              style={{ marginTop: '1.25rem', maxWidth: '100%' }}
               required
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <button type="submit" className="btn btn-primary" disabled={!file || uploading}>
               {uploading ? (
                 <>

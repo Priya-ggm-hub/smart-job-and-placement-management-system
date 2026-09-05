@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -29,12 +29,20 @@ import InterviewManagement from './pages/admin/InterviewManagement';
 
 // Layout Wrapper for Authenticated Pages
 const AppLayout = ({ children }) => {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <div className="app-container">
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <Navbar />
-        <div style={{ display: 'flex', flex: 1 }}>
-          <Sidebar />
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
+        <Navbar 
+          mobileNavOpen={mobileNavOpen} 
+          onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)} 
+        />
+        <div style={{ display: 'flex', flex: 1, minWidth: 0, position: 'relative' }}>
+          <Sidebar 
+            mobileNavOpen={mobileNavOpen} 
+            onCloseMobileNav={() => setMobileNavOpen(false)} 
+          />
           <main className="main-content">
             <div className="page-body">{children}</div>
           </main>
