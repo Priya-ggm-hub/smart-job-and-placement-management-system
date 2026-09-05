@@ -36,11 +36,36 @@ public class DataSourceConfig {
                 configUrl
         );
 
-        String host = getFirstNonEmpty(System.getenv("MYSQLHOST"), System.getenv("MYSQL_HOST"), System.getenv("DB_HOST"));
-        String port = getFirstNonEmpty(System.getenv("MYSQLPORT"), System.getenv("MYSQL_PORT"), System.getenv("DB_PORT"));
-        String database = getFirstNonEmpty(System.getenv("MYSQLDATABASE"), System.getenv("MYSQL_DATABASE"), System.getenv("DB_NAME"));
-        String username = getFirstNonEmpty(System.getenv("DB_USERNAME"), System.getenv("DB_USER"), System.getenv("MYSQLUSER"), System.getenv("MYSQL_USER"), System.getenv("SPRING_DATASOURCE_USERNAME"), configUsername);
-        String password = getFirstNonEmpty(System.getenv("DB_PASSWORD"), System.getenv("MYSQLPASSWORD"), System.getenv("MYSQL_PASSWORD"), System.getenv("SPRING_DATASOURCE_PASSWORD"), configPassword);
+        String host = getFirstNonEmpty(
+                System.getenv("MYSQLHOST"),
+                System.getenv("MYSQL_HOST"),
+                System.getenv("DB_HOST")
+        );
+        String port = getFirstNonEmpty(
+                System.getenv("MYSQLPORT"),
+                System.getenv("MYSQL_PORT"),
+                System.getenv("DB_PORT")
+        );
+        String database = getFirstNonEmpty(
+                System.getenv("MYSQLDATABASE"),
+                System.getenv("MYSQL_DATABASE"),
+                System.getenv("DB_NAME")
+        );
+        String username = getFirstNonEmpty(
+                System.getenv("DB_USERNAME"),
+                System.getenv("DB_USER"),
+                System.getenv("MYSQLUSER"),
+                System.getenv("MYSQL_USER"),
+                System.getenv("SPRING_DATASOURCE_USERNAME"),
+                configUsername
+        );
+        String password = getFirstNonEmpty(
+                System.getenv("DB_PASSWORD"),
+                System.getenv("MYSQLPASSWORD"),
+                System.getenv("MYSQL_PASSWORD"),
+                System.getenv("SPRING_DATASOURCE_PASSWORD"),
+                configPassword
+        );
 
         String finalJdbcUrl = null;
         String finalUsername = username;
@@ -68,29 +93,35 @@ public class DataSourceConfig {
                         path = (database != null && !database.isBlank()) ? database : "railway";
                     }
                     int uriPort = uri.getPort() > 0 ? uri.getPort() : 3306;
-                    finalJdbcUrl = "jdbc:mysql://" + uri.getHost() + ":" + uriPort + "/" + path
-                            + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true";
+                    String baseUrl = "jdbc:mysql://" + uri.getHost() + ":" + uriPort + "/" + path;
+                    if (uri.getQuery() != null && !uri.getQuery().isBlank()) {
+                        baseUrl += "?" + uri.getQuery();
+                    }
+                    finalJdbcUrl = appendJdbcParams(baseUrl);
                 } catch (Exception e) {
                     logger.warn("Could not parse URI {}, using jdbc:mysql fallback.", rawUrl);
-                    finalJdbcUrl = "jdbc:" + rawUrl;
+                    finalJdbcUrl = appendJdbcParams("jdbc:" + rawUrl);
                 }
             } else if (rawUrl.startsWith("jdbc:")) {
-                finalJdbcUrl = rawUrl;
+                finalJdbcUrl = appendJdbcParams(rawUrl);
             } else {
-                finalJdbcUrl = "jdbc:mysql://" + rawUrl;
+                finalJdbcUrl = appendJdbcParams("jdbc:mysql://" + rawUrl);
             }
         }
 
         // If no raw URL, construct from host/port/database
         if (finalJdbcUrl == null || finalJdbcUrl.isBlank()) {
-            if (host != null && !host.isBlank()) {
-                String dbPort = (port != null && !port.isBlank()) ? port : "3306";
-                String dbName = (database != null && !database.isBlank()) ? database : "railway";
-                finalJdbcUrl = "jdbc:mysql://" + host + ":" + dbPort + "/" + dbName
-                        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true";
-            } else {
-                finalJdbcUrl = "jdbc:mysql://localhost:3306/placement_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true";
+            String dbHost = host;
+            if (dbHost == null || dbHost.isBlank()) {
+                if (System.getenv("RAILWAY_ENVIRONMENT") != null || System.getenv("RAILWAY_SERVICE_ID") != null) {
+                    dbHost = "mysql.railway.internal";
+                } else {
+                    dbHost = "localhost";
+                }
             }
+            String dbPort = (port != null && !port.isBlank()) ? port : "3306";
+            String dbName = (database != null && !database.isBlank()) ? database : "railway";
+            finalJdbcUrl = appendJdbcParams("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName);
         }
 
         if (finalUsername == null || finalUsername.isBlank()) {
@@ -100,7 +131,7 @@ public class DataSourceConfig {
             finalPassword = "";
         }
 
-        logger.info("Configuring DataSource with JDBC URL: {} and Username: {}", maskUrl(finalJdbcUrl), finalUsername);
+        logger.info("Initializing DataSource with JDBC URL: {} and Username: {}", maskUrl(finalJdbcUrl), finalUsername);
 
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(finalJdbcUrl);
@@ -112,8 +143,31 @@ public class DataSourceConfig {
         hikariConfig.setConnectionTimeout(30000);
         hikariConfig.setIdleTimeout(600000);
         hikariConfig.setMaxLifetime(1800000);
+        hikariConfig.setInitializationFailTimeout(60000);
 
         return new HikariDataSource(hikariConfig);
+    }
+
+    private String appendJdbcParams(String url) {
+        if (url == null) return url;
+        String separator = url.contains("?") ? "&" : "?";
+        StringBuilder sb = new StringBuilder(url);
+        if (!url.contains("allowPublicKeyRetrieval")) {
+            sb.append(separator).append("allowPublicKeyRetrieval=true");
+            separator = "&";
+        }
+        if (!url.contains("useSSL")) {
+            sb.append(separator).append("useSSL=false");
+            separator = "&";
+        }
+        if (!url.contains("serverTimezone")) {
+            sb.append(separator).append("serverTimezone=UTC");
+            separator = "&";
+        }
+        if (!url.contains("createDatabaseIfNotExist")) {
+            sb.append(separator).append("createDatabaseIfNotExist=true");
+        }
+        return sb.toString();
     }
 
     private String getFirstNonEmpty(String... values) {

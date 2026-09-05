@@ -5,4 +5,4 @@ nixPkgs = ["maven", "openjdk17"]
 cmds = ["mvn clean package -DskipTests"]
 
 [start]
-cmd = "java -Dserver.port=$PORT -jar target/placement-management-system-1.0.0.jar"
+cmd = "sh -c 'JAR=$(find . -name \"placement-management-system-*.jar\" ! -name \"*.original\" | head -n 1); java -Dserver.port=${PORT:-8080} -jar \"$JAR\"'"
