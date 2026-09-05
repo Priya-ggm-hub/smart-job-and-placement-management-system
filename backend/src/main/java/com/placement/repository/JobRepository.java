@@ -11,11 +11,14 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByStatus(String status);
     List<Job> findByCompanyId(Long companyId);
+    boolean existsByTitleAndCompanyId(String title, Long companyId);
+    Optional<Job> findByTitleAndCompanyId(String title, Long companyId);
 
     @Query("SELECT j FROM Job j WHERE j.status = 'OPEN' AND j.deadline >= :currentDate")
     List<Job> findActiveJobs(@Param("currentDate") LocalDate currentDate);
